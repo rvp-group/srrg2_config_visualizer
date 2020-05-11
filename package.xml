@@ -11,11 +11,4 @@
   <depend>tf</depend>
   <depend>srrg_cmake_modules</depend>
   <depend>srrg2_core</depend>
-  <depend>srrg2_core_ros</depend>
-  <depend>srrg2_solver</depend>
-  <depend>srrg2_slam_interfaces</depend>
-  <!--ia TODO modules should be dynamically loaded-->
-  <depend>srrg2_laser_slam_2d</depend>
-  <depend>srrg2_proslam</depend>
-
 </package>

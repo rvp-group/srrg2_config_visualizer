@@ -3,13 +3,16 @@
 #include "srrg_imgui-node-editor_app.h"
 #include <imgui_node_editor.h>
 #define IMGUI_DEFINE_MATH_OPERATORS
+#include "srrg_config_visualizer/configurable_node_manager.h"
+#include <atomic>
 #include <ax/Builders.h>
 #include <ax/Math2D.h>
 #include <ax/Widgets.h>
+#include <fstream>
 #include <imgui_internal.h>
-
-#include "helper_stuff.h"
-#include "srrg_config_visualizer/configurable_node_manager.h"
+#include <srrg_config/configurable_shell.h>
+#include <srrg_system_utils/parse_command_line.h>
+#include <thread>
 
 #define TEST_LOG std::cerr << "test_config_node| "
 namespace ed   = ax::NodeEditor;
@@ -158,10 +161,7 @@ void bgContextMenu() {
           if (ImGui::IsMouseDoubleClicked(0)) {
             selected[i]      = !selected[i];
             ImVec2 scrolling = g_Context->GetView().Origin;
-            std::cerr << "scroll: " << scrolling.x << " " << scrolling.y << std::endl;
-            std::cerr << "mouse : " << clicked_mouse.x << " " << clicked_mouse.y << std::endl;
-            std::cerr << "zoooom: " << ed::GetCurrentZoom() << std::endl;
-            ImVec2 pos = (clicked_mouse - scrolling) * ed::GetCurrentZoom();
+            ImVec2 pos       = (clicked_mouse - scrolling) * ed::GetCurrentZoom();
 
             //            std::cerr << "pos   : " << clicked_mouse.x << " " << clicked_mouse.y <<
             //            std::endl;
@@ -284,6 +284,10 @@ const char* srrg2_ine_Application_GetName() {
   return "SRRG Config Visualizer";
 }
 
+// static std::atomic<bool> shell_ready;
+// static ConfigurableShell* shell;
+// std::thread shell_thread;
+
 void srrg2_ine_Application_Initialize() {
   ed::Config config;
   config.SettingsFile = nullptr;
@@ -293,16 +297,28 @@ void srrg2_ine_Application_Initialize() {
   auto& io       = ImGui::GetIO();
   io.IniFilename = nullptr;
 
-  registerAllInstances();
-  ConfigurableNodeManager::initFactory();
-  types = ConfigurableNodeManager::listTypes();
-
   ParseCommandLine cmd_line(srrg_argv, banner);
   ArgumentString file(
     &cmd_line, "c", "conf_filename", "generates a config file", "test_config_node.config");
+  ArgumentString dl_stub_file(
+    &cmd_line, "dlc", "dl-config", "stub where to read/write the stub", "");
   cmd_line.parse();
+  if (dl_stub_file.isSet()) {
+    std::ifstream is(dl_stub_file.value());
+    if (is.good()) {
+      ConfigurableManager::initFactory(dl_stub_file.value());
+    } else {
+      ConfigurableManager::makeFactoryStub(dl_stub_file.value());
+    }
+  }
 
+  ConfigurableNodeManager::initFactory();
+  types       = ConfigurableNodeManager::listTypes();
   config_file = file.value();
+  // // start the shell thread
+  // shell_ready=false;
+  // shell=new ConfigurableShell(manager);
+  // shell_thread=std::thread(ConfigurableShell::runStatic, StringVector(), &shell_ready);
 }
 
 void srrg2_ine_Application_Finalize() {
@@ -314,6 +330,8 @@ void srrg2_ine_Application_Finalize() {
   ed::SetCurrentEditor(nullptr);
 
   ed::DestroyEditor(reinterpret_cast<ed::EditorContext*>(g_Context));
+
+  //  shell_thread.join();
 }
 
 void srrg2_ine_Application_Frame() {

@@ -5,12 +5,6 @@ find_package(catkin REQUIRED COMPONENTS
   srrg_cmake_modules
   sensor_msgs
   srrg2_core
-  srrg2_core_ros
-  srrg2_solver
-  srrg2_slam_interfaces
-  #ia TODO modules should be loaded dynamically
-  srrg2_laser_slam_2d
-  srrg2_proslam
   )
 
 include(${srrg_cmake_modules_INCLUDE_DIRS}/CMakeCompileOptions.txt)
@@ -32,12 +26,6 @@ catkin_package(
   srrg_cmake_modules
   sensor_msgs
   srrg2_core
-  srrg2_core_ros
-  srrg2_solver
-  srrg2_slam_interfaces
-  #ia TODO modules should be loaded dynamically
-  srrg2_laser_slam_2d
-  srrg2_proslam
 )
 
 include_directories(src)

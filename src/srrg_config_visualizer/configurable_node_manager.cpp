@@ -1,5 +1,4 @@
 #include "configurable_node_manager.h"
-#include <srrg_solver/solver_core/factor_base.h>
 #include <srrg_system_utils/system_utils.h>
 
 namespace srrg2_core {
@@ -59,6 +58,7 @@ namespace srrg2_core {
                 << "] does not have field [" << param_name << "]" << std::endl;
       return;
     }
+    
     // srrg remove the actual connection from the configs
     if (auto pcv = dynamic_cast<PropertyConfigurableVector*>(prop_it->second)) {
       pcv->assign(std::vector<PropertyContainerIdentifiablePtr>());
@@ -232,21 +232,21 @@ namespace srrg2_core {
     //    _nodes.find(instance)->second->node_bb.pos = pos_;
   }
 
-  std::vector<std::string> ConfigurableNodeManager::listFactorTypes() {
-    // now we try a cast to initiate the types
-    std::vector<std::string> available;
-    std::vector<std::string> class_names = srrg2_core::getClassNames();
-    for (const std::string& name : class_names) {
-      // std::cerr << *it << " ";
-      srrg2_core::Serializable* ser = srrg2_core::Serializable::createInstance(name);
-      srrg2_solver::FactorBase* f   = dynamic_cast<srrg2_solver::FactorBase*>(ser);
-      if (f) {
-        available.push_back(name);
-      }
-      delete ser;
-    }
-    return available;
-  }
+  // std::vector<std::string> ConfigurableNodeManager::listFactorTypes() {
+  //   // now we try a cast to initiate the types
+  //   std::vector<std::string> available;
+  //   std::vector<std::string> class_names = srrg2_core::getClassNames();
+  //   for (const std::string& name : class_names) {
+  //     // std::cerr << *it << " ";
+  //     srrg2_core::Serializable* ser = srrg2_core::Serializable::createInstance(name);
+  //     srrg2_solver::FactorBase* f   = dynamic_cast<srrg2_solver::FactorBase*>(ser);
+  //     if (f) {
+  //       available.push_back(name);
+  //     }
+  //     delete ser;
+  //   }
+  //   return available;
+  // }
 
   void ConfigurableNodeManager::refreshView(ImVec2 pos_) {
     _computeHierarchy(pos_);

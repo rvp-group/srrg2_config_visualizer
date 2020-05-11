@@ -9368,7 +9368,7 @@ void ImGui::SuspendLayout()
 
 void ImGui::ResumeLayout()
 {
-    ImGuiWindow* window __attribute__((unused)) = GetCurrentWindow();
+    ImGuiWindow* window = GetCurrentWindow();
     IM_ASSERT(!window->DC.CurrentLayout);
     IM_ASSERT(!window->DC.LayoutStack.empty());
     PopLayout(NULL);

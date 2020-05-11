@@ -1,6 +1,5 @@
 #include "config_node.h"
 #include "configurable_node_manager.h"
-#include <srrg2_proslam_adaptation/intensity_feature_extractor_base.h>
 #include <srrg_property/property_eigen.h>
 #include <srrg_property/property_identifiable.h>
 
@@ -13,7 +12,6 @@
 namespace ed = ax::NodeEditor;
 
 namespace srrg2_core {
-  using namespace srrg2_slam_interfaces; // ds feature extractor
   int ConfigNode::ed_counter = 1;
 
   ConfigNode::ConfigNode(PropertyContainerIdentifiablePtr configurable_) :
@@ -86,96 +84,98 @@ namespace srrg2_core {
         double& d = p->value();
         ImGui::DragScalar(name, ImGuiDataType_Double, &d, 0.05);
       } else if (auto p = dynamic_cast<PropertyString*>(field.second)) {
-        if (dynamic_cast<FeatureExtractor*>(_configurable.get())) {
-          if (field.first == "descriptor_type") {
-            static std::vector<std::string> descriptor_types =
-              FeatureExtractor::available_descriptors;
-            std::sort(descriptor_types.begin(), descriptor_types.end());
-            const size_t factor_classes_size = descriptor_types.size();
-            const char* items[factor_classes_size];
-            for (size_t i = 0; i < factor_classes_size; ++i) {
-              items[i] = descriptor_types[i].c_str();
-            }
-            size_t index = std::distance(
-              descriptor_types.begin(),
-              std::find(descriptor_types.begin(), descriptor_types.end(), p->value()));
-            const char* item_current = items[index == factor_classes_size ? 0 : index];
+        // if (dynamic_cast<srrg2_proslam::FeatureExtractor*>(_configurable.get())) {
+        //   if (field.first == "descriptor_type") {
+        //     static std::vector<std::string> descriptor_types =
+        //       srrg2_proslam::FeatureExtractor::available_descriptors;
+        //     std::sort(descriptor_types.begin(), descriptor_types.end());
+        //     const size_t factor_classes_size = descriptor_types.size();
+        //     const char* items[factor_classes_size];
+        //     for (size_t i = 0; i < factor_classes_size; ++i) {
+        //       items[i] = descriptor_types[i].c_str();
+        //     }
+        //     size_t index = std::distance(
+        //       descriptor_types.begin(),
+        //       std::find(descriptor_types.begin(), descriptor_types.end(), p->value()));
+        //     const char* item_current = items[index == factor_classes_size ? 0 : index];
 
-            if (ImGui::BeginCombo(name, item_current, 0)) {
-              for (size_t n = 0; n < factor_classes_size; n++) {
-                bool is_selected = (item_current == items[n]);
-                if (ImGui::Selectable(items[n], is_selected)) {
-                  item_current = items[n];
-                  p->setValue(std::string(item_current));
-                }
-                if (is_selected) {
-                  ImGui::SetItemDefaultFocus();
-                }
-              }
-              ImGui::EndCombo();
-            }
+        //     if (ImGui::BeginCombo(name, item_current, 0)) {
+        //       for (size_t n = 0; n < factor_classes_size; n++) {
+        //         bool is_selected = (item_current == items[n]);
+        //         if (ImGui::Selectable(items[n], is_selected)) {
+        //           item_current = items[n];
+        //           p->setValue(std::string(item_current));
+        //         }
+        //         if (is_selected) {
+        //           ImGui::SetItemDefaultFocus();
+        //         }
+        //       }
+        //       ImGui::EndCombo();
+        //     }
 
-          } else if (field.first == "detector_type") {
-            static std::vector<std::string> detector_type = FeatureExtractor::available_detectors;
-            std::sort(detector_type.begin(), detector_type.end());
-            const size_t factor_classes_size = detector_type.size();
-            const char* items[factor_classes_size];
-            for (size_t i = 0; i < factor_classes_size; ++i) {
-              items[i] = detector_type[i].c_str();
-            }
-            size_t index =
-              std::distance(detector_type.begin(),
-                            std::find(detector_type.begin(), detector_type.end(), p->value()));
-            const char* item_current = items[index == factor_classes_size ? 0 : index];
+        //   } else if (field.first == "detector_type") {
+        //     static std::vector<std::string> detector_type =
+        //       srrg2_proslam::FeatureExtractor::available_detectors;
+        //     std::sort(detector_type.begin(), detector_type.end());
+        //     const size_t factor_classes_size = detector_type.size();
+        //     const char* items[factor_classes_size];
+        //     for (size_t i = 0; i < factor_classes_size; ++i) {
+        //       items[i] = detector_type[i].c_str();
+        //     }
+        //     size_t index =
+        //       std::distance(detector_type.begin(),
+        //                     std::find(detector_type.begin(), detector_type.end(), p->value()));
+        //     const char* item_current = items[index == factor_classes_size ? 0 : index];
 
-            if (ImGui::BeginCombo(name, item_current, 0)) {
-              for (size_t n = 0; n < factor_classes_size; n++) {
-                bool is_selected = (item_current == items[n]);
-                if (ImGui::Selectable(items[n], is_selected)) {
-                  item_current = items[n];
-                  p->setValue(std::string(item_current));
-                }
-                if (is_selected) {
-                  ImGui::SetItemDefaultFocus();
-                }
-              }
-              ImGui::EndCombo();
-            }
-          }
+        //     if (ImGui::BeginCombo(name, item_current, 0)) {
+        //       for (size_t n = 0; n < factor_classes_size; n++) {
+        //         bool is_selected = (item_current == items[n]);
+        //         if (ImGui::Selectable(items[n], is_selected)) {
+        //           item_current = items[n];
+        //           p->setValue(std::string(item_current));
+        //         }
+        //         if (is_selected) {
+        //           ImGui::SetItemDefaultFocus();
+        //         }
+        //       }
+        //       ImGui::EndCombo();
+        //     }
+        //   }
 
-        } else if (field.first == "factor_classname" || field.first == "factor_class_name") {
-          const char* label      = "Select the type of factor";
-          float types_max_size_x = 100.0;
-          static std::vector<std::string> factor_classes =
-            ConfigurableNodeManager::listFactorTypes();
-          const size_t factor_classes_size = factor_classes.size();
-          const char* items[factor_classes_size];
-          for (size_t i = 0; i < factor_classes_size; ++i) {
-            items[i]         = factor_classes[i].c_str();
-            types_max_size_x = ImGui::CalcTextSize(items[i]).x;
-          }
-          types_max_size_x = std::max<float>(
-            ImGui::CalcTextSize(label).x + 100 + ImGui::CalcTextSize("search").x, types_max_size_x);
+        // } else if (field.first == "factor_classname" || field.first == "factor_class_name") {
+        //   const char* label      = "Select the type of factor";
+        //   float types_max_size_x = 100.0;
+        //   static std::vector<std::string> factor_classes =
+        //     ConfigurableNodeManager::listFactorTypes();
+        //   const size_t factor_classes_size = factor_classes.size();
+        //   const char* items[factor_classes_size];
+        //   for (size_t i = 0; i < factor_classes_size; ++i) {
+        //     items[i]         = factor_classes[i].c_str();
+        //     types_max_size_x = ImGui::CalcTextSize(items[i]).x;
+        //   }
+        //   types_max_size_x = std::max<float>(
+        //     ImGui::CalcTextSize(label).x + 100 + ImGui::CalcTextSize("search").x, types_max_size_x);
 
-          size_t index =
-            std::distance(factor_classes.begin(),
-                          std::find(factor_classes.begin(), factor_classes.end(), p->value()));
-          const char* item_current = items[index == factor_classes_size ? 0 : index];
+        //   size_t index =
+        //     std::distance(factor_classes.begin(),
+        //                   std::find(factor_classes.begin(), factor_classes.end(), p->value()));
+        //   const char* item_current = items[index == factor_classes_size ? 0 : index];
 
-          if (ImGui::BeginCombo(name, item_current, 0)) {
-            for (size_t n = 0; n < factor_classes_size; n++) {
-              bool is_selected = (item_current == items[n]);
-              if (ImGui::Selectable(items[n], is_selected)) {
-                item_current = items[n];
-                p->setValue(std::string(item_current));
-              }
-              if (is_selected) {
-                ImGui::SetItemDefaultFocus();
-              }
-            }
-            ImGui::EndCombo();
-          }
-        } else {
+        //   if (ImGui::BeginCombo(name, item_current, 0)) {
+        //     for (size_t n = 0; n < factor_classes_size; n++) {
+        //       bool is_selected = (item_current == items[n]);
+        //       if (ImGui::Selectable(items[n], is_selected)) {
+        //         item_current = items[n];
+        //         p->setValue(std::string(item_current));
+        //       }
+        //       if (is_selected) {
+        //         ImGui::SetItemDefaultFocus();
+        //       }
+        //     }
+        //     ImGui::EndCombo();
+        //   }
+        // } else 
+          {
           std::strcpy(buff, p->value().c_str());
           if (ImGui::InputText(name, buff, 512)) {
             p->setValue(std::string(buff));
